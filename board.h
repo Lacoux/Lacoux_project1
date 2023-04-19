@@ -102,9 +102,7 @@ void Board::insert_page(int x, int y, int page_width, int page_height, int id, i
         for(int w = x; w <= x + page_width; w++) { 
             for(int i = 0; i < num_jobs-1; i++) {
                 board[h*width + w][i+1] = board[h*width + w][i];
-            }
-            for(int j = 0; j < num_jobs-1; j++) {
-                board[h*width + w][j+1+num_jobs] = board[h*width + w][j + num_jobs];
+                board[h*width + w][i+1+num_jobs] = board[h*width + w][i + num_jobs];
             }
             board[h*width + w][0] = content;
             char char_id = id;
@@ -112,14 +110,14 @@ void Board::insert_page(int x, int y, int page_width, int page_height, int id, i
         }
     }
     int i = 0;
-    while(idlist[i] != 0) {
+    while(idlist[i][0] != 0) {
         i = i + 1;
     }
     idlist[i][0] = id;
     idlist[i][1] = y;
-    idlist[i][2] = y + page_height;
+    idlist[i][2] = page_height;
     idlist[i][3] = x;
-    idlist[i][4] = x + page_width;
+    idlist[i][4] = page_width;
     print_board();
 }
 
@@ -128,10 +126,70 @@ void Board::delete_page(int id) {
 }
 
 void Board::modify_content(int id, char content) {
-   
+    int i = 0;
+    while(idlist[i][0] != id) {
+        i = i + 1;
+    }
+    int y = idlist[i][1];
+    int page_height = idlist[i][2];
+    int x = idlist[i][3];
+    int page_width = idlist[1][4];
+    char char_id = id;
 
+    for(int h = y; h <= y + page_height; h++) {
+        for(int w = x; w <= x + page_width; w++) { 
+            int i = 0;
+            while(board[h*width + w][i+num_jobs] != char_id) {
+                i = i + 1;
+            }
+            board[h*width + w][i] = content;
+        }
+    }
+    print_board();
 }
+
 void Board::modify_position(int id, int x, int y) {
-   
-    
+    int i = 0;
+    while(idlist[i][0] != id) {
+        i = i + 1;
+    }
+    int prev_y = idlist[i][1];
+    int page_height = idlist[i][2];
+    int prev_x = idlist[i][3];
+    int page_width = idlist[1][4];
+    char char_id = id;
+    int i = 0;
+    while(board[prev_y*width + prev_x][i+num_jobs] != char_id) {
+        i = i + 1;
+    }
+    char content = board[prev_y*width + prev_x][i];
+
+    for(int h = prev_y; h <= prev_y + page_height; h++) {
+        for(int w = prev_x; w <= prev_x + page_width; w++) { 
+            int i = 0;
+            while(board[h*width + w][i+num_jobs] != char_id) {
+                i = i + 1;
+            }
+            if(i == num_jobs - 1) {
+                board[h*width + w][i] = ' ';
+                board[h*width + w][i+num_jobs] = ' ';
+            }
+            else {
+                for(int j = i; j < num_jobs-1; j++) {
+                    board[h*width + w][j] = board[h*width + w][j+1];
+                    board[h*width + w][j+num_jobs] = board[h*width + w][j+1+num_jobs];
+                }
+            }
+        }
+    }
+    for(int h = y; h <= y + page_height; h++) {
+        for(int w = x; w <= x + page_width; w++) { 
+            for(int i = 0; i < num_jobs-1; i++) {
+                board[h*width + w][i+1] = board[h*width + w][i];
+                board[h*width + w][i+1+num_jobs] = board[h*width + w][i + num_jobs];
+            }
+            board[h*width + w][0] = content;
+            board[h*width + w][num_jobs] = char_id;
+        }
+    }
 }
