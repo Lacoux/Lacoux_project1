@@ -112,14 +112,14 @@ void Board::insert_page(int x, int y, int page_width, int page_height, int id, i
         }
     }
     int i = 0;
-    while(idlist[i] != 0) {
+    while(idlist[i][0] != 0) {
         i = i + 1;
     }
     idlist[i][0] = id;
     idlist[i][1] = y;
-    idlist[i][2] = y + page_height;
+    idlist[i][2] = page_height;
     idlist[i][3] = x;
-    idlist[i][4] = x + page_width;
+    idlist[i][4] = page_width;
     print_board();
 }
 
@@ -128,9 +128,28 @@ void Board::delete_page(int id) {
 }
 
 void Board::modify_content(int id, char content) {
-   
+    int i = 0;
+    while(idlist[i][0] != id) {
+        i = i + 1;
+    }
+    int y = idlist[i][1];
+    int page_height = idlist[i][2];
+    int x = idlist[i][3];
+    int page_width = idlist[1][4];
+    char char_id = id;
 
+    for(int h = y; h <= y + page_height; h++) {
+        for(int w = x; w <= x + page_width; w++) { 
+            int i = 0;
+            while(board[h*width + w][i+num_jobs] != char_id) {
+                i = i + 1;
+            }
+            board[h*width + w][i] = content;
+        }
+    }
+    print_board();
 }
+
 void Board::modify_position(int id, int x, int y) {
    
     
