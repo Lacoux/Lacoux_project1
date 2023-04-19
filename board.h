@@ -14,15 +14,17 @@ class Board {
         void print_job(int job_idx, char job_type, int id);
 
         //job functions
-        void insert_page(int x, int y, int width, int height, int id, int content, int num_jobs);
+        void insert_page(int x, int y, int width, int height, int id, int content);
         void delete_page(int id);
         void modify_content(int id, char content);
         void modify_position(int id, int x, int y);
 
     private:
-        int num_jobs, width, height; 
+        int num_jobs, width, height;
+        int width_border, height_border;
         ofstream& output; 
         char** board;
+        int** idlist;
 };
 
 
@@ -42,11 +44,20 @@ Board::Board(int num_jobs, int width, int height, ofstream& output_stream): outp
         }
     }
 
+    idlist = new int*[num_jobs];
+    
+    for(int h = 0; h < num_jobs; h++) {
+        idlist[h] = new int[5];
+        for(int w = 0; w < 5; w++) {
+            idlist[h, w] = 0;
+        }
+    }
+
 }
 
 Board::~Board() {
     delete [] board;
-    
+    delete [] idlist;
 }
 
 
@@ -70,7 +81,7 @@ void Board::print_board() {
 void Board::print_job(int job_idx, char job_type, int id) {
     output << ">> (" << job_idx <<") ";
     switch(job_type) {
-        
+
         case 'i':
             output << "Insert ";
             break;
@@ -86,9 +97,9 @@ void Board::print_job(int job_idx, char job_type, int id) {
 }
 
 
-void Board::insert_page(int x, int y, int width, int height, int id, int content, int num_jobs) {
-    for(int h = y; h <= y + height; h++) {
-        for(int w = x; w <= x + width; w++) { 
+void Board::insert_page(int x, int y, int page_width, int page_height, int id, int content) {
+    for(int h = y; h <= y + page_height; h++) {
+        for(int w = x; w <= x + page_width; w++) { 
             for(int i = 0; i < num_jobs-1; i++) {
                 board[h*width + w][i+1] = board[h*width + w][i];
             }
@@ -96,13 +107,24 @@ void Board::insert_page(int x, int y, int width, int height, int id, int content
                 board[h*width + w][j+1+num_jobs] = board[h*width + w][j + num_jobs];
             }
             board[h*width + w][0] = content;
+            char char_id = id;
+            board[h*width + w][num_jobs] = char_id;
         }
     }
+    int i = 0;
+    while(idlist[i] != 0) {
+        i = i + 1;
+    }
+    idlist[i][0] = id;
+    idlist[i][1] = y;
+    idlist[i][2] = y + page_height;
+    idlist[i][3] = x;
+    idlist[i][4] = x + page_width;
     print_board();
 }
 
 void Board::delete_page(int id) {
-        
+
 }
 
 void Board::modify_content(int id, char content) {
