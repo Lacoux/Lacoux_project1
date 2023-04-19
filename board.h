@@ -96,8 +96,6 @@ void Board::insert_page(int x, int y, int width, int height, int id, int content
                 board[h*width + w][j+1+num_jobs] = board[h*width + w][j + num_jobs];
             }
             board[h*width + w][0] = content;
-            char char_id = id;
-            board[h*width + w][num_jobs] = char_id;
         }
     }
     print_board();
