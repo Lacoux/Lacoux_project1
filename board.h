@@ -39,6 +39,7 @@ Board::Board(int num_jobs, int width, int height, ofstream& output_stream): outp
     this->height = height;
     this->num_jobs = num_jobs;
 
+    //Define Array Using Vectors
     board= vector<vector<char>>(width*height, vector<char>(num_jobs, ' '));
     board_id = vector<vector<int>>(width*height, vector<int>(num_jobs, 0));
     idlist = vector<vector<int>>(num_jobs, vector<int>(5, 0));
@@ -59,7 +60,7 @@ void Board::print_board() {
     for (h = 0; h < height; h++) {
         output << "| ";
         for (w = 0; w < width; w++) {
-            output << board[h*width + w][0] << " ";
+            output << board[h*width + w][0] << " "; //board[x][0] is printed
         }
         output << "| " << endl;
     }
@@ -95,13 +96,14 @@ void Board::insert_page(int x, int y, int page_width, int page_height, int id, c
                 board_id[h*width + w][i+1] = board_id[h*width + w][i];
             }
             board[h*width + w][0] = content;
-            board_id[h*width + w][0] = id;
+            board_id[h*width + w][0] = id; //Push Arrays and insert content
         }
     }
     int j = 0;
     while(idlist[j][0] != 0) {
         j = j + 1;
     }
+    //saving id and id's info to idlist
     idlist[j][0] = id;
     idlist[j][1] = y;
     idlist[j][2] = page_height;
@@ -110,6 +112,7 @@ void Board::insert_page(int x, int y, int page_width, int page_height, int id, c
     print_board();
 }
 
+// this is page insertion, but it doesn't save idlist
 void Board::insert_page_light(int x, int y, int page_width, int page_height, int id, char content) {
     for(int h = y; h < y+ page_height; h++) {
         for(int w = x; w < x + page_width; w++) { 
@@ -125,7 +128,7 @@ void Board::insert_page_light(int x, int y, int page_width, int page_height, int
 }
 
 void Board::delete_page(int id) {
-    // 너 어디사냐
+    //Get information using id and idlist
     int i = 0;
     while(idlist[i][0] != id) {
         i = i + 1;
@@ -135,7 +138,7 @@ void Board::delete_page(int id) {
     int prev_x = idlist[i][3];
     int page_width = idlist[i][4];
     
-    // 살피기
+    //Is all content cor to id is all displayed(board[][0])?
     loop:
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
@@ -148,13 +151,13 @@ void Board::delete_page(int id) {
             }
             if (i != 0) {
                 int new_id = board_id[h*width + w][i-1];
-                delete_page_light(new_id);
+                delete_page_light(new_id); //it's not, so let's look at the above content
                 goto loop;
             }
         }
     }
 
-    // 줘패기
+    // delete content and below content will be displayed
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
             for(int j = 0; j < num_jobs-1; j++) {
@@ -167,7 +170,7 @@ void Board::delete_page(int id) {
     }
     print_board();
     
-    // 살려주기 (delete 핵심)
+    // retrieve pages using memory_id and memory_content, and insert_page_light
     i = 0;
     int read_id;
     char read_content;
@@ -191,13 +194,14 @@ void Board::delete_page(int id) {
         i = i + 1;
     }
 
+    //we used memory well, so let's reset it.
     for(int i = 0; i < num_jobs; i++) {
         memory_id[i] = 0;
         memory_content[i] = ' ';
     }
 }
 
-
+//this is recursion function and at last this function will delete content which is all displayed
 void Board::delete_page_light(int id) {
     int i = 0;
     while(idlist[i][0] != id) {
@@ -208,7 +212,7 @@ void Board::delete_page_light(int id) {
     int prev_x = idlist[i][3];
     int page_width = idlist[i][4];
     
-    // 살피기
+    // So is it the last?
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
             i = 0;
@@ -220,12 +224,12 @@ void Board::delete_page_light(int id) {
             }
             if (i != 0) {
                 int new_id = board_id[h*width + w][i-1];
-                delete_page_light(new_id);
+                delete_page_light(new_id); // if not, let's do it again
             }
         }
     }
 
-    // 저장(light 핵심)
+    // it's the last, so we came here. And let's memorize this id and content
     if(memory_id[0] != 0) {
         for(int j = num_jobs - 2; j >= 0; j--) {
             memory_id[j+1] = memory_id[j];
@@ -234,8 +238,9 @@ void Board::delete_page_light(int id) {
     }
     memory_id[0] = id;
     memory_content[0] = board[prev_y*width + prev_x][0];
+    // last memorized one is first retrieved
     
-    // 줘패기
+    // delete it and display below content
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
             for(int j = 0; j < num_jobs-1; j++) {
@@ -249,8 +254,8 @@ void Board::delete_page_light(int id) {
     print_board();
 }
 
+// almost similar with delete code, but there is a code added
 void Board::modify_content(int id, char content) {
-// 너 어디사냐
     int i = 0;
     while(idlist[i][0] != id) {
         i = i + 1;
@@ -260,7 +265,6 @@ void Board::modify_content(int id, char content) {
     int prev_x = idlist[i][3];
     int page_width = idlist[i][4];
     
-    // 살피기
     loop:
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
@@ -279,7 +283,6 @@ void Board::modify_content(int id, char content) {
         }
     }
 
-    // 줘패기
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
             for(int j = 0; j < num_jobs-1; j++) {
@@ -292,10 +295,9 @@ void Board::modify_content(int id, char content) {
     }
     print_board();
 
+    // let's modify content
     insert_page_light(prev_x, prev_y, page_width, page_height, id, content);
 
-    
-    // 살려주기 (delete 핵심)
     i = 0;
     int read_id;
     char read_content;
@@ -325,6 +327,7 @@ void Board::modify_content(int id, char content) {
     }
 }
 
+// it is also almost similar with delete, but there is added parts.
 void Board::modify_position(int id, int x, int y) {
     int i = 0;
     while(idlist[i][0] != id) {
@@ -339,9 +342,9 @@ void Board::modify_position(int id, int x, int y) {
     while(board_id[prev_y*width + prev_x][j] != id) {
         j = j + 1;
     }
+    //let's memorize this content, it will be needed...
     char content = board[prev_y*width + prev_x][j];
 
-    // 살피기
     loop:
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
@@ -360,7 +363,6 @@ void Board::modify_position(int id, int x, int y) {
         }
     }
 
-    // 줘패기
     for(int h = prev_y; h < prev_y + page_height; h++) {
         for(int w = prev_x; w < prev_x + page_width; w++) { 
             for(int j = 0; j < num_jobs-1; j++) {
@@ -373,6 +375,7 @@ void Board::modify_position(int id, int x, int y) {
     }
     print_board();
 
+    // let's insert position and let idlist know changes
     insert_page_light(x, y, page_width, page_height, id, content);
     j = 0;
     while(idlist[j][0] != id) {
@@ -383,7 +386,6 @@ void Board::modify_position(int id, int x, int y) {
     idlist[j][3] = x;
     idlist[j][4] = page_width;
     
-    // 살려주기 (delete 핵심
     i = 0;
     int read_id;
     char read_content;
